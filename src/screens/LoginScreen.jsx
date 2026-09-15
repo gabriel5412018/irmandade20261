@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation, useNavigate, Link } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
@@ -16,7 +16,7 @@ function LoginScreen() {
   const [recoveryEmail, setRecoveryEmail] = useState('')
   const [recoveryMessage, setRecoveryMessage] = useState('')
 
-  const from = location.state?.from?.pathname ?? '/escalas'
+  const from = location.state?.from?.pathname ?? '/'
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -114,10 +114,8 @@ function LoginScreen() {
         )}
 
         <p className="screen__muted">
-          Ainda não tem conta?{' '}
-          <Link to="/cadastro" className="screen__link">
-            Cadastre-se
-          </Link>
+          Seu acesso é liberado pelo coordenador da Irmandade. Sem cadastro
+          público.
         </p>
       </Card>
     </div>

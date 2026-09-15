@@ -157,6 +157,20 @@ function DetalheEscalaScreen() {
         </div>
       </Card>
 
+      {estouEscalado && (
+        <div className="detalhe__escalado">
+          <Badge tone="success">VOCÊ ESTÁ ESCALADO</Badge>
+          {minhasFuncoes.map((f) => {
+            const eu = f.irmaos.find((i) => i.perfil_id === user?.id)
+            return (
+              <p key={f.id} className="detalhe__minha-funcao">
+                Função: {eu?.papel ? `${eu.papel} - ${f.nome}` : f.nome}
+              </p>
+            )
+          })}
+        </div>
+      )}
+
       {minhasFuncoes.length > 0 && (
         <Card title="Minhas funções nesta escala">
           <EscalaVisual

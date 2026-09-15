@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from './useAuth'
+import { isCoordenador, isAdministrador, isIrmao } from '../utils/roles'
 import Button from './Button'
 import NotificacoesAtivador from './NotificacoesAtivador'
 
@@ -9,7 +10,8 @@ function Layout() {
   const linkClass = ({ isActive }) =>
     `layout__link ${isActive ? 'layout__link--active' : ''}`.trim()
 
-  const isCoordenador = perfil?.role === 'coordenador'
+  const coord = isCoordenador(perfil)
+  const admin = isAdministrador(perfil)
 
   return (
     <div className="layout">
@@ -23,6 +25,11 @@ function Layout() {
         Irmandade do Santíssimo
       </span>
         <div className="layout__links">
+          {isIrmao(perfil) && (
+            <NavLink to="/inicio" className={linkClass}>
+              Início
+            </NavLink>
+          )}
           <NavLink to="/escalas" className={linkClass}>
             Escalas
           </NavLink>
@@ -32,9 +39,14 @@ function Layout() {
           <NavLink to="/perfil" className={linkClass}>
             Perfil
           </NavLink>
-          {isCoordenador && (
+          {coord && (
             <NavLink to="/coordenador" className={linkClass}>
               Coordenador
+            </NavLink>
+          )}
+          {admin && (
+            <NavLink to="/admin" className={linkClass}>
+              Administração
             </NavLink>
           )}
         </div>

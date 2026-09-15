@@ -10,31 +10,29 @@ import {
   updatePerfilByCoordenador,
   deletePerfil,
 } from '../services/perfilService'
-
-const STATUS_LABEL = {
-  pendente: { label: 'Pendente', tone: 'warning' },
-  aprovado: { label: 'Aprovado', tone: 'success' },
-  inativo: { label: 'Inativo', tone: 'neutral' },
-}
+import { reenviarConvite, linkDoConvite } from '../services/conviteService'
+import { getPerfilStatusLabel } from '../utils/status'
 
 function GerenciarIrmaosScreen() {
   const [irmaos, setIrmaos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [conviteLink, setConviteLink] = useState('')
 
-  async function reload() {
+  async function load() {
     const { data, error: listError } = await listPerfis()
     if (listError) {
       setError(listError.message)
-      return
+    } else {
+      setIrmaos(data ?? [])
     }
-    setIrmaos(data ?? [])
   }
 
   useEffect(() => {
     let cancelled = false
 
-    async function load() {
+    async function init() {
       const { data, error: listError } = await listPerfis()
       if (cancelled) return
       if (listError) {
@@ -45,7 +43,7 @@ function GerenciarIrmaosScreen() {
       setLoading(false)
     }
 
-    load()
+    init()
 
     return () => {
       cancelled = true
@@ -54,14 +52,40 @@ function GerenciarIrmaosScreen() {
 
   async function handleStatus(irmao, newStatus) {
     setError('')
-    const { error: updateError } = await updatePerfilByCoordenador(irmao.id, {
-      status: newStatus,
-    })
+    setMessage('')
+    setConviteLink('')
+    const { error: updateError } = await updatePerfilByCoordenador(
+      irmao.id,
+      { status: newStatus },
+    )
     if (updateError) {
       setError(updateError.message)
       return
     }
-    reload()
+    load()
+  }
+
+  async function handleReenviar(irmao) {
+    setError('')
+    setMessage('')
+    setConviteLink('')
+    const { data, error: resendError } = await reenviarConvite(irmao.id)
+    if (resendError) {
+      setError(resendError.message)
+      return
+    }
+    setMessage('Convite reenviado.')
+    setConviteLink(linkDoConvite(data.token))
+    load()
+  }
+
+  async function handleCopiar() {
+    if (!conviteLink) return
+    try {
+      await navigator.clipboard.writeText(conviteLink)
+    } catch {
+      window.prompt('Copie o link do convite:', conviteLink)
+    }
   }
 
   async function handleRemove(irmao) {
@@ -75,27 +99,55 @@ function GerenciarIrmaosScreen() {
       setError(deleteError.message)
       return
     }
-    reload()
+    load()
   }
 
   if (loading) {
     return <p className="screen__muted">Carregando...</p>
   }
 
-  const pendentes = irmaos.filter((i) => i.status === 'pendente')
+  const pendentes = irmaos.filter((i) => i.status === 'convite_pendente')
 
   return (
     <div className="screen screen--wide">
       <h1>Gerenciar irmãos</h1>
       <CoordenadorMenu />
 
+      <div className="montar-escala-destaque">
+        <div>
+          <h2 className="montar-escala-destaque__titulo">Adicionar irmão</h2>
+          <p className="screen__muted">
+            Cadastre um novo irmão para que ele receba um convite e ative sua
+            conta.
+          </p>
+        </div>
+        <Link to="/coordenador/irmaos/novo">
+          <Button variant="primary" className="montar-escala-destaque__btn">
+            + Adicionar irmão
+          </Button>
+        </Link>
+      </div>
+
       {error && <p className="screen__error">{error}</p>}
+      {message && <p className="screen__success">{message}</p>}
+
+      {conviteLink && (
+        <Card title="Link do convite">
+          <p className="screen__muted">
+            Envie este link para o irmão ativar a conta:
+          </p>
+          <p className="convite__link">{conviteLink}</p>
+          <Button variant="secondary" onClick={handleCopiar}>
+            Copiar link
+          </Button>
+        </Card>
+      )}
 
       <div className="dashboard">
         <Card title="Total">
           <p className="dashboard__numero">{irmaos.length}</p>
         </Card>
-        <Card title="Aguardando aprovação">
+        <Card title="Convites pendentes">
           <p className="dashboard__numero presenca__num--aguardando">
             {pendentes.length}
           </p>
@@ -108,7 +160,7 @@ function GerenciarIrmaosScreen() {
         )}
         <ul className="irmao-list">
           {irmaos.map((irmao) => {
-            const status = STATUS_LABEL[irmao.status] ?? STATUS_LABEL.pendente
+            const status = getPerfilStatusLabel(irmao.status)
             return (
               <li key={irmao.id} className="irmao-item">
                 <Avatar
@@ -126,15 +178,15 @@ function GerenciarIrmaosScreen() {
                 </div>
                 <Badge tone={status.tone}>{status.label}</Badge>
                 <div className="irmao-item__actions">
-                  {irmao.status === 'pendente' && (
+                  {irmao.status === 'convite_pendente' && (
                     <Button
-                      variant="success"
-                      onClick={() => handleStatus(irmao, 'aprovado')}
+                      variant="secondary"
+                      onClick={() => handleReenviar(irmao)}
                     >
-                      Aprovar
+                      Reenviar convite
                     </Button>
                   )}
-                  {irmao.status === 'aprovado' && (
+                  {irmao.status === 'ativo' && (
                     <Button
                       variant="secondary"
                       onClick={() => handleStatus(irmao, 'inativo')}
@@ -145,7 +197,7 @@ function GerenciarIrmaosScreen() {
                   {irmao.status === 'inativo' && (
                     <Button
                       variant="secondary"
-                      onClick={() => handleStatus(irmao, 'aprovado')}
+                      onClick={() => handleStatus(irmao, 'ativo')}
                     >
                       Reativar
                     </Button>

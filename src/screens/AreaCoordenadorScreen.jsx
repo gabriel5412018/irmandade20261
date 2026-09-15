@@ -4,7 +4,8 @@ import Card from '../components/Card'
 import Badge from '../components/Badge'
 import Button from '../components/Button'
 import CoordenadorMenu from '../components/CoordenadorMenu'
-import { listEscalas, updateEscala } from '../services/escalaService'
+import ConfirmDialog from '../components/ConfirmDialog'
+import { listEscalas, updateEscala, deleteEscala } from '../services/escalaService'
 import { listPresencasDaEscala } from '../services/presencaService'
 
 function PresencaResumo({ escalaId }) {
@@ -47,6 +48,8 @@ function AreaCoordenadorScreen() {
   const [escalas, setEscalas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [excluirEscala, setExcluirEscala] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -87,6 +90,22 @@ function AreaCoordenadorScreen() {
     }
     const { data } = await listEscalas()
     setEscalas(data ?? [])
+  }
+
+  async function handleConfirmarExclusao() {
+    if (!excluirEscala) return
+    setDeleting(true)
+    setError('')
+    const { error: deleteError } = await deleteEscala(excluirEscala.id)
+    setDeleting(false)
+    if (deleteError) {
+      setError(deleteError.message)
+      setExcluirEscala(null)
+      return
+    }
+    const { data } = await listEscalas()
+    setEscalas(data ?? [])
+    setExcluirEscala(null)
   }
 
   return (
@@ -148,10 +167,26 @@ function AreaCoordenadorScreen() {
               <Link to={`/coordenador/escala/${escala.id}/presencas`}>
                 <Button variant="secondary">Presenças</Button>
               </Link>
+              <Button variant="danger" onClick={() => setExcluirEscala(escala)}>
+                Excluir
+              </Button>
             </li>
           ))}
         </ul>
       </Card>
+
+      <ConfirmDialog
+        open={Boolean(excluirEscala)}
+        title="Excluir escala"
+        message={
+          excluirEscala?.status === 'publicada'
+            ? 'Esta escala já foi publicada e pode possuir respostas de presença. Tem certeza que deseja excluí-la? Essa ação não poderá ser desfeita.'
+            : 'Tem certeza que deseja excluir esta escala? Essa ação não poderá ser desfeita.'
+        }
+        confirmLabel={deleting ? 'Excluindo...' : 'Excluir'}
+        onConfirm={handleConfirmarExclusao}
+        onCancel={() => setExcluirEscala(null)}
+      />
 
       <div className="dashboard">
         <Card title="Publicadas">

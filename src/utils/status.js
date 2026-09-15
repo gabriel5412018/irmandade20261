@@ -5,9 +5,11 @@ export const PRESENCA_LABEL = {
 }
 
 export const PERFIL_STATUS_LABEL = {
+  convite_pendente: { label: 'Convite pendente', tone: 'warning' },
+  ativo: { label: 'Ativo', tone: 'success' },
+  inativo: { label: 'Inativo', tone: 'neutral' },
   pendente: { label: 'Cadastro pendente', tone: 'warning' },
   aprovado: { label: 'Aprovado', tone: 'success' },
-  inativo: { label: 'Inativo', tone: 'neutral' },
 }
 
 export function getPresencaLabel(status) {
@@ -15,5 +17,5 @@ export function getPresencaLabel(status) {
 }
 
 export function getPerfilStatusLabel(status) {
-  return PERFIL_STATUS_LABEL[status] ?? PERFIL_STATUS_LABEL.pendente
+  return PERFIL_STATUS_LABEL[status] ?? PERFIL_STATUS_LABEL.convite_pendente
 }

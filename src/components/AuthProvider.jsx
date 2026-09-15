@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { AuthContext } from './AuthContext'
-import { getSession, onAuthStateChange, signOut } from '../services/authService'
+import {
+  getSession,
+  getCurrentUser,
+  onAuthStateChange,
+  signOut,
+} from '../services/authService'
 import { getPerfil } from '../services/perfilService'
 
 export function AuthProvider({ children }) {
@@ -13,21 +18,6 @@ export function AuthProvider({ children }) {
     let cancelled = false
 
     async function init() {
-      const { data } = await getSession()
-      const sessionUser = data.session?.user ?? null
-      setUser(sessionUser)
-
-      if (sessionUser) {
-        const { data: perfilData } = await getPerfil(sessionUser.id)
-        if (!cancelled && perfilData) {
-          setPerfil(perfilData)
-        }
-      }
-
-      if (!cancelled) {
-        setLoading(false)
-      }
-
       const { data: listener } = onAuthStateChange(async (session) => {
         const nextUser = session?.user ?? null
         setUser(nextUser)
@@ -41,6 +31,29 @@ export function AuthProvider({ children }) {
         }
       })
       subscription = listener.subscription
+
+      const { data } = await getSession()
+      const sessionUser = data.session?.user ?? null
+
+      if (sessionUser) {
+        const { data: userData, error: userError } = await getCurrentUser()
+        if (cancelled) return
+        if (userError || !userData?.user) {
+          setUser(null)
+          setPerfil(null)
+          setLoading(false)
+          return
+        }
+        setUser(userData.user)
+        const { data: perfilData } = await getPerfil(userData.user.id)
+        if (!cancelled && perfilData) {
+          setPerfil(perfilData)
+        }
+      }
+
+      if (!cancelled) {
+        setLoading(false)
+      }
     }
 
     init()

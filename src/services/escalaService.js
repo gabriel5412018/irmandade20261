@@ -17,22 +17,7 @@ export async function listEscalas({ publicadasOnly = false } = {}) {
 }
 
 export async function getEscala(id) {
-  return supabase
-    .from('escalas')
-    .select(
-      `
-      id, celebracao, data, horario, descricao, status, created_at,
-      funcoes (id, nome, ordem),
-      escala_irmaos (
-        id, funcao_id, papel, perfil_id,
-        perfis (id, full_name, phone, photo_url, status)
-      ),
-      presencas (id, perfil_id, status, observacao)
-    `,
-    )
-    .eq('id', id)
-    .order('ordem', { referencedTable: 'funcoes' })
-    .single()
+  return supabase.rpc('obter_escala_completa', { p_escala_id: id })
 }
 
 export async function createEscala({ celebracao, data, horario, descricao }) {

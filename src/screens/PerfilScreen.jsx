@@ -11,12 +11,7 @@ import {
   updatePerfil,
   uploadFotoPerfil,
 } from '../services/perfilService'
-
-const STATUS_LABEL = {
-  pendente: { label: 'Cadastro pendente', tone: 'warning' },
-  aprovado: { label: 'Aprovado', tone: 'success' },
-  inativo: { label: 'Inativo', tone: 'neutral' },
-}
+import { getPerfilStatusLabel } from '../utils/status'
 
 function PerfilScreen() {
   const { user } = useAuth()
@@ -94,7 +89,7 @@ function PerfilScreen() {
     return <p className="screen__muted">Carregando...</p>
   }
 
-  const status = perfil ? STATUS_LABEL[perfil.status] ?? STATUS_LABEL.pendente : null
+  const status = perfil ? getPerfilStatusLabel(perfil.status) : null
 
   return (
     <div className="screen">

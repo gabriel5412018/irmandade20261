@@ -1,12 +1,16 @@
 import { supabase } from './supabaseClient'
 
 export async function getPresenca(escalaId, perfilId) {
-  return supabase
+  const { data, error } = await supabase
     .from('presencas')
     .select('*')
     .eq('escala_id', escalaId)
     .eq('perfil_id', perfilId)
     .maybeSingle()
+  if (error?.code === 'PGRST116') {
+    return { data: null, error: null }
+  }
+  return { data, error }
 }
 
 export async function upsertPresenca({ escalaId, perfilId, status, observacao }) {

@@ -37,8 +37,20 @@ describe('getPerfilStatusLabel', () => {
     expect(getPerfilStatusLabel('aprovado').label).toBe('Aprovado')
   })
 
-  it('retorna pendente como padrão', () => {
+  it('retorna o rótulo de ativo', () => {
+    expect(getPerfilStatusLabel('ativo').label).toBe('Ativo')
+    expect(getPerfilStatusLabel('ativo').tone).toBe('success')
+  })
+
+  it('retorna o rótulo de convite pendente', () => {
+    expect(getPerfilStatusLabel('convite_pendente').label).toBe(
+      'Convite pendente',
+    )
+    expect(getPerfilStatusLabel('convite_pendente').tone).toBe('warning')
+  })
+
+  it('retorna convite pendente como padrão', () => {
     expect(getPerfilStatusLabel('pendente').label).toBe('Cadastro pendente')
-    expect(getPerfilStatusLabel(undefined).label).toBe('Cadastro pendente')
+    expect(getPerfilStatusLabel(undefined).label).toBe('Convite pendente')
   })
 })

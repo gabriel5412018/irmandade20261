@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './useAuth'
+import { isIrmao } from '../utils/roles'
 import {
   notificationsSupported,
   getPermission,
@@ -13,7 +14,7 @@ import { getPresenca } from '../services/presencaService'
 import { listAvisos } from '../services/avisoService'
 
 function NotificacoesAtivador() {
-  const { user } = useAuth()
+  const { user, perfil } = useAuth()
   const [permission, setPermission] = useState(() => {
     if (!user || !notificationsSupported()) return null
     return getPermission()
@@ -25,7 +26,7 @@ function NotificacoesAtivador() {
   }
 
   useEffect(() => {
-    if (permission !== 'granted' || !user) return
+    if (permission !== 'granted' || !user || !isIrmao(perfil)) return
 
     let cancelled = false
 
@@ -64,9 +65,14 @@ function NotificacoesAtivador() {
     return () => {
       cancelled = true
     }
-  }, [permission, user])
+  }, [permission, user, perfil])
 
-  if (!notificationsSupported() || permission === 'granted' || !user) {
+  if (
+    !notificationsSupported() ||
+    permission === 'granted' ||
+    !user ||
+    !isIrmao(perfil)
+  ) {
     return null
   }
 

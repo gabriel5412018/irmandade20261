@@ -425,6 +425,58 @@
   margin-top: 12px;
 }
 
+.detalhe__escalado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--primary-light);
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+}
+
+.detalhe__minha-funcao {
+  margin: 0;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.confirm-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.confirm-dialog {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.confirm-dialog__titulo {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.confirm-dialog__acoes {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
 .escala-item .escala-item__link {
   text-decoration: none;
 }
@@ -569,59 +621,35 @@
   margin-top: 16px;
 }
 
-.role-selector {
-  margin-bottom: 16px;
-}
-
-.role-selector__label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-
-.role-selector__options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.role-card {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: left;
+.convite__link {
   font-family: var(--sans);
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.role-card:hover {
-  border-color: var(--primary);
-}
-
-.role-card--active {
-  border-color: var(--primary);
+  font-size: 13px;
+  word-break: break-all;
   background: var(--primary-light);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  color: var(--primary);
 }
 
-.role-card__titulo {
-  font-weight: 600;
-  color: var(--text);
+.inicio__titulo {
+  margin: 0 0 4px;
+  font-size: 28px;
 }
 
-.role-card__desc {
-  font-size: 13px;
-  color: var(--text-muted);
+.inicio__atalhos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
 }
 
-.role-selector__aviso {
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--text-muted);
+.inicio__atalhos a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.inicio__atalhos .button {
+  margin-top: 12px;
 }

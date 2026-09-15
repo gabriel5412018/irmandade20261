@@ -5,6 +5,7 @@ import Button from '../components/Button'
 import Input from '../components/Input'
 import Badge from '../components/Badge'
 import EscalaVisual from '../components/EscalaVisual'
+import ConfirmDialog from '../components/ConfirmDialog'
 import {
   createEscala,
   getEscala,
@@ -15,7 +16,7 @@ import {
   addIrmaoNaEscala,
 } from '../services/escalaService'
 import { listPerfis } from '../services/perfilService'
-import { FUNCOES_PADRAO, IRMAOS_MOCK } from '../data/irmaosMock'
+import { FUNCOES_PADRAO } from '../data/irmaosMock'
 
 function criarFuncaoVazia(nome, ordem, permiteVarios = false, papeis = []) {
   return {
@@ -44,14 +45,15 @@ function CriarEscalaScreen() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [confirmarExclusao, setConfirmarExclusao] = useState(false)
 
   useEffect(() => {
     async function load() {
-      const { data: perfis, error: perfisError } = await listPerfis()
-
-      const aprovados = (perfis ?? []).filter((p) => p.status === 'aprovado')
-      const origemMock = perfisError || aprovados.length === 0
-      setIrmaosDisponiveis(origemMock ? IRMAOS_MOCK : aprovados)
+      const { data: perfis } = await listPerfis()
+      const aprovados = (perfis ?? []).filter(
+        (p) => p.status === 'ativo' || p.status === 'aprovado',
+      )
+      setIrmaosDisponiveis(aprovados)
 
       if (!isEditing) {
         setFuncoes(
@@ -278,11 +280,14 @@ function CriarEscalaScreen() {
 
   async function handleExcluir() {
     if (!isEditing) return
-    const confirmar = window.confirm('Excluir esta escala?')
-    if (!confirmar) return
+    setConfirmarExclusao(true)
+  }
+
+  async function handleConfirmarExclusao() {
     const { error: deleteError } = await deleteEscala(id)
     if (deleteError) {
       setError(deleteError.message)
+      setConfirmarExclusao(false)
       return
     }
     navigate('/coordenador', { replace: true })
@@ -436,6 +441,18 @@ function CriarEscalaScreen() {
         )}
         {status === 'publicada' && <Badge tone="success">Publicada</Badge>}
       </div>
+
+      <ConfirmDialog
+        open={confirmarExclusao}
+        title="Excluir escala"
+        message={
+          status === 'publicada'
+            ? 'Esta escala já foi publicada e pode possuir respostas de presença. Tem certeza que deseja excluí-la? Essa ação não poderá ser desfeita.'
+            : 'Tem certeza que deseja excluir esta escala? Essa ação não poderá ser desfeita.'
+        }
+        onConfirm={handleConfirmarExclusao}
+        onCancel={() => setConfirmarExclusao(false)}
+      />
     </div>
   )
 }

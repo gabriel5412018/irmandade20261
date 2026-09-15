@@ -1,7 +1,15 @@
 import { supabase } from './supabaseClient'
 
 export async function getPerfil(userId) {
-  return supabase.from('perfis').select('*').eq('id', userId).maybeSingle()
+  const { data, error } = await supabase
+    .from('perfis')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle()
+  if (error?.code === 'PGRST116') {
+    return { data: null, error: null }
+  }
+  return { data, error }
 }
 
 export async function updatePerfil(userId, updates) {

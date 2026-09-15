@@ -1,9 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AuthProvider from '../components/AuthProvider'
 import Layout from '../components/Layout'
+import { useAuth } from '../components/useAuth'
+import { homePorRole } from '../utils/roles'
 import LoginScreen from '../screens/LoginScreen'
-import CadastroScreen from '../screens/CadastroScreen'
 import RecuperarSenhaScreen from '../screens/RecuperarSenhaScreen'
+import AtivarContaScreen from '../screens/AtivarContaScreen'
+import HomeScreen from '../screens/HomeScreen'
 import PerfilScreen from '../screens/PerfilScreen'
 import EscalasScreen from '../screens/EscalasScreen'
 import DetalheEscalaScreen from '../screens/DetalheEscalaScreen'
@@ -15,8 +18,28 @@ import GestaoAvisosScreen from '../screens/GestaoAvisosScreen'
 import HistoricoPresencaScreen from '../screens/HistoricoPresencaScreen'
 import HistoricoIrmaoScreen from '../screens/HistoricoIrmaoScreen'
 import GerenciarIrmaosScreen from '../screens/GerenciarIrmaosScreen'
+import AdicionarIrmaoScreen from '../screens/AdicionarIrmaoScreen'
 import ControlePresencaScreen from '../screens/ControlePresencaScreen'
+import AdminScreen from '../screens/AdminScreen'
 import { ProtectedRoute, ROLES } from './ProtectedRoute'
+
+function HomeRedirect() {
+  const { user, perfil, loading } = useAuth()
+
+  if (loading) {
+    return <p className="screen__muted">Carregando...</p>
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (perfil && perfil.status !== 'ativo') {
+    return <Navigate to="/login" replace />
+  }
+
+  return <Navigate to={homePorRole(perfil)} replace />
+}
 
 function AppRouter() {
   return (
@@ -24,11 +47,15 @@ function AppRouter() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginScreen />} />
-          <Route path="/cadastro" element={<CadastroScreen />} />
           <Route path="/recuperar-senha" element={<RecuperarSenhaScreen />} />
+          <Route
+            path="/ativar-conta/:token"
+            element={<AtivarContaScreen />}
+          />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
+              <Route path="/inicio" element={<HomeScreen />} />
               <Route path="/escalas" element={<EscalasScreen />} />
               <Route
                 path="/escalas/:id"
@@ -39,6 +66,14 @@ function AppRouter() {
               <Route
                 path="/historico-presenca"
                 element={<HistoricoPresencaScreen />}
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.ADMINISTRADOR]}>
+                    <AdminScreen />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/coordenador/irmao/:perfilId/historico"
@@ -61,6 +96,14 @@ function AppRouter() {
                 element={
                   <ProtectedRoute allowedRoles={[ROLES.COORDENADOR]}>
                     <GerenciarIrmaosScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/coordenador/irmaos/novo"
+                element={
+                  <ProtectedRoute allowedRoles={[ROLES.COORDENADOR]}>
+                    <AdicionarIrmaoScreen />
                   </ProtectedRoute>
                 }
               />
@@ -107,8 +150,8 @@ function AppRouter() {
             </Route>
           </Route>
 
-          <Route path="/" element={<Navigate to="/escalas" replace />} />
-          <Route path="*" element={<Navigate to="/escalas" replace />} />
+          <Route path="/" element={<HomeRedirect />} />
+          <Route path="*" element={<HomeRedirect />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
